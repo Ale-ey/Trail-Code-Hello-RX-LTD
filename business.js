@@ -33,16 +33,7 @@ const businessType = {
 	}
  }
 
-function bootstrap_inputs(fields, values) {
-	return Object.entries(fields).reduce((a, [k, v]) => `${a}<div class="form-floating mb-3">
-<input type="${v.type}" class="form-control" id="${k}" name="${k}"
-	${values? `value="${values instanceof Map? values.get(k) : values[k]}"`: ""}
-	placeholder="${v.placeholder ?? ' '}"
-	${v.pattern? "pattern=" + v.pattern : ""}
-	${v.optional? "" : "required"}>
-<label for="${k}" class="form-label">${v.label}</label>
-</div>`, "");
-}
+// Note: Using bootstrap_inputs function from spa.js to avoid code duplication
 
 customElements.define('business-application', class BusinessApplication extends HTMLElement {
 	connectedCallback() {
