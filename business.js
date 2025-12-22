@@ -199,6 +199,58 @@ customElements.define(
   }
 );
 
+// GPHC input component for validating General Pharmaceutical Council numbers (7 digits)
+customElements.define(
+  "gphc-input",
+  class GPHCInput extends HTMLElement {
+    connectedCallback() {
+      this.addEventListener("change", this);
+      this.innerHTML = `<input class="form-control" name="gphc" value="${
+        this.getAttribute("gphc") ?? ""
+      }" size="7" maxlength="7" placeholder="GPHC number" pattern="\\d{7}" title="7 digit GPHC number" required>`;
+      this.validate();
+    }
+    handleEvent(e) {
+      this.validate();
+    }
+    validate() {
+      // GPHC numbers must be exactly 7 digits
+      const pattern = /^\d{7}$/;
+      const input = this.querySelector("input");
+      const gphc = input.value;
+      input.setCustomValidity("");
+      if (gphc && !pattern.test(gphc)) {
+        input.setCustomValidity("GPHC number must be exactly 7 digits");
+        input.reportValidity();
+        return;
+      }
+      if (pattern.test(gphc)) {
+        this.dispatchEvent(
+          new CustomEvent("gphc", { detail: gphc, bubbles: true })
+        );
+      }
+    }
+  }
+);
+
+// Pharmacist input component with GPHC number and full name
+customElements.define(
+  "pharmacist-input",
+  class PharmacistInput extends HTMLElement {
+    connectedCallback() {
+      const gphc = this.getAttribute("gphc");
+      const name = this.getAttribute("name");
+      this.classList.add("input-group", "mb-2");
+      this.innerHTML = `
+        <gphc-input gphc="${gphc ?? ""}"></gphc-input>
+        <input class="form-control" name="pharmacist-name" value="${
+          name ?? ""
+        }" placeholder="Full name" required>
+        <button type="button" class="btn btn-secondary" name="remove">-</button>`;
+    }
+  }
+);
+
 customElements.define(
   "pharmacy-ods-input",
   class PharmacyOdsInput extends HTMLElement {
