@@ -1,19 +1,7 @@
-function bootstrap_inputs(fields, values) {
-	return Object.entries(fields).reduce((a, [k, v]) => `${a}<div class="form-floating mb-3">
-<input type="${v.type}" class="form-control ${v.class?? ""}" id="${k}" name="${k}"
-	${values? `value="${values instanceof Map? values.get(k) : values[k]}"`: ""}
-	placeholder="${v.placeholder ?? ' '}"
-	${v.pattern? `pattern="${v.pattern}"` : ""}
-	${v.autocomplete? `autocomplete=${v.autocomplete}` : ""}
-	${v.optional? "" : "required"}>
-<label for="${k}" class="form-label">${v.label}</label>
-</div>`, "");
-}
-
 customElements.define("toast-container", class ToastWebcomponent extends HTMLElement {
 	connectedCallback() {
 		this.classList.add("toast-container", "position-fixed", "p-3", "z-3", "top-0", "end-0");
-		addEventListener("error", e => this.showToast({ title: "Page error", messasge: e.message, style: "text-bg-warning" }));
+		addEventListener("error", e => this.showToast({ title: "Page error", message: e.message, style: "text-bg-warning" }));
 		addEventListener("toast-error", e => this.showToast({ ...e.detail, style:'text-bg-warning'}));
 		addEventListener("toast-success", e => this.showToast({ ...e.detail, style:'text-bg-success'}));
 	}

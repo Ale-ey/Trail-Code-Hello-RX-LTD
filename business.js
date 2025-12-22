@@ -2,7 +2,7 @@ const contact_fields = {
 	name: { label: "Name" },
 	position: { label: "Position" },
 	email: { label: "Email", type: "email" },
-	invoiceEmail: { label: "Invoice email (Optional)", type: "email", required: false },
+	invoiceEmail: { label: "Invoice email (Optional)", type: "email", optional: true },
 	telephone: { label: "Telephone", type:"tel", pattern: "^(0|\\+?44)7\\d{9}$|^(0|\\+?44)1\\d{8,9}$" }
 }
 
@@ -33,10 +33,10 @@ const businessType = {
 
 function bootstrap_inputs(fields, values) {
 	return Object.entries(fields).reduce((a, [k, v]) => `${a}<div class="form-floating mb-3">
-<input type="${v.type}" class="form-control" id="${k}" name="${k}"
+<input type="${v.type ?? 'text'}" class="form-control" id="${k}" name="${k}"
 	${values? `value="${values instanceof Map? values.get(k) : values[k]}"`: ""}
 	placeholder="${v.placeholder ?? ' '}"
-	${v.pattern? "pattern=" + v.pattern : ""}
+	${v.pattern? `pattern="${v.pattern}"` : ""}
 	${v.optional? "" : "required"}>
 <label for="${k}" class="form-label">${v.label}</label>
 </div>`, "");
@@ -46,6 +46,7 @@ customElements.define('business-application', class BusinessApplication extends 
 	connectedCallback() {
 		this.addEventListener("submit", this);
 		this.addEventListener("click", this);
+		this.addEventListener("keydown", this);
 		this.viewChanged();
 	}
 	handleEvent(e) {
@@ -59,8 +60,20 @@ customElements.define('business-application', class BusinessApplication extends 
 		}
 		if (e.target.name === "add") {
 			const input = this.querySelector("#ods");
-			this.querySelector("#pharmacies").innerHTML += `<pharmacy-ods-input ods="${input.value}"></pharmacy-ods-input>`;
-			input.value = ""
+			const value = input.value.trim();
+			if (!value) {
+				input.focus();
+				return;
+			}
+			this.querySelector("#pharmacies").innerHTML += `<pharmacy-ods-input ods="${value}"></pharmacy-ods-input>`;
+			input.value = "";
+			input.focus();
+		}
+		
+		// Add keyboard shortcut: Enter key on ODS input adds pharmacy
+		if (e.type === "keydown" && e.key === "Enter" && e.target.id === "ods") {
+			e.preventDefault();
+			this.querySelector('[name=add]').click();
 		}
 
 		if (e.type === "submit") {
@@ -70,10 +83,12 @@ customElements.define('business-application', class BusinessApplication extends 
 			if (id) data.id = id;
 			if(!data.business || !data.business.size) {
 				this.querySelector("[name=businessType]").focus();
+				dispatchEvent(new CustomEvent("toast-error", { detail: { message: "Please select a business type", style: "text-bg-warning" } }));
 				return;
 			}
 			if(!data.ods || data.ods.length == 0) {
 				this.querySelector("#ods").focus();
+				dispatchEvent(new CustomEvent("toast-error", { detail: { message: "Please add at least one pharmacy", style: "text-bg-warning" } }));
 				return;
 			}
 			const detail = { type: id? "business-accept" : "business-application", data };
@@ -98,15 +113,16 @@ customElements.define('business-application', class BusinessApplication extends 
 		<legend>Contact</legend>
 		${bootstrap_inputs(contact_fields, values?.contact)}
 	</fieldset>
+	<pharmacist-list-editor></pharmacist-list-editor>
 	<legend>Pharmacies</legend>
 	<fieldset id=pharmacies class="mb-3">
 		${values?.ods?.reduce((a, v) => `${a}<pharmacy-ods-input ods="${v}"></pharmacy-ods-input>`, '') ?? ""}
 	</fieldset>
 	<div class="input-group mb-3">
-		<input class="form-control" id="ods" form="" placeholder="ODS code">
+		<input class="form-control" id="ods" form="" placeholder="ODS code" maxlength="6">
 		<button type=button class="btn btn-primary" name=add>Add pharmacy</button>
 	</div>
-	<button type="submit" class="btn btn-primary">${values? "Accept" : "Apply"}</button>
+	<button type="submit" class="btn btn-primary btn-lg w-100">${values? "Accept" : "Apply"}</button>
 </form>`;
 		if(values) {
 			this.businessType(values.businessType, values.business);
@@ -159,27 +175,106 @@ customElements.define('pharmacy-ods-input', class PharmacyOdsInput extends HTMLE
 	}
 })
 
-customElements.define('pharmacy-list-editor', class PharmacyListEditor extends HTMLElement { // TODO finish to use in busiess application
+customElements.define('pharmacist-item', class PharmacistItem extends HTMLElement {
 	connectedCallback() {
-		this.addEventListener("click", this)
-		this.innerHTML = `<fieldset data-id=list class="mb-3"></fieldset>
-	<div class="input-group mb-3">
-		<pharmacy-list-editor></pharmacy-list-editor>
-		<button type=button class="btn btn-primary" name=add>Add pharmacy</button>
-	</div>`
+		const gphc = this.getAttribute("gphc") ?? "";
+		const fullName = this.getAttribute("fullname") ?? "";
+		this.classList.add('input-group', 'mb-2');
+		this.innerHTML = `<input type="text" class="form-control" name="pharmacist-gphc" value="${gphc}" 
+			placeholder="GPHC Number" pattern="^\\d{7}$" maxlength="7" required 
+			title="Must be exactly 7 digits">
+		<input type="text" class="form-control" name="pharmacist-name" value="${fullName}" 
+			placeholder="Full Name" required>
+		<button type="button" class="btn btn-danger" name="remove-pharmacist" title="Remove pharmacist">&times;</button>`;
+	}
+})
+
+customElements.define('pharmacist-list-editor', class PharmacistListEditor extends HTMLElement {
+	connectedCallback() {
+		this.addEventListener("click", this);
+		this.addEventListener("keydown", this);
+		const pharmacists = this.getAttribute("pharmacists");
+		let items = "";
+		if (pharmacists) {
+			try {
+				const list = JSON.parse(pharmacists);
+				items = list.map(p => `<pharmacist-item gphc="${p.gphc}" fullname="${p.name}"></pharmacist-item>`).join("");
+			} catch(e) {}
+		}
+		this.innerHTML = `<legend>Pharmacists</legend>
+		<fieldset id="pharmacist-list" class="mb-3">
+			${items}
+		</fieldset>
+		<div class="input-group mb-3">
+			<input type="text" class="form-control" id="new-pharmacist-gphc" 
+				placeholder="GPHC Number (7 digits)" pattern="^\\d{7}$" maxlength="7" 
+				title="Must be exactly 7 digits" form="" autocomplete="off" 
+				inputmode="numeric">
+			<input type="text" class="form-control" id="new-pharmacist-name" 
+				placeholder="Full Name" form="" autocomplete="off">
+			<button type="button" class="btn btn-primary" name="add-pharmacist">Add Pharmacist</button>
+		</div>`;
 	}
 	handleEvent(e) {
-		if (e.target.name === "remove") {
+		if (e.target.name === "remove-pharmacist") {
 			e.target.parentNode.remove();
 			return;
 		}
-		if (e.target.name === "add") {
-			const input = this.querySelector("#ods");
-			this.querySelector("[data-id='list']").innerHTML += `<pharmacy-ods-input ods="${input.value}"></pharmacy-ods-input>`;
-			input.value = ""
+		
+		// Add keyboard shortcut: Enter key adds pharmacist, Tab moves between fields
+		if (e.type === "keydown" && e.key === "Enter") {
+			const gphcInput = this.querySelector("#new-pharmacist-gphc");
+			const nameInput = this.querySelector("#new-pharmacist-name");
+			
+			if (e.target === gphcInput && gphcInput.value.trim()) {
+				e.preventDefault();
+				nameInput.focus();
+				return;
+			}
+			if (e.target === nameInput && nameInput.value.trim()) {
+				e.preventDefault();
+				this.querySelector('[name=add-pharmacist]').click();
+				return;
+			}
+		}
+		
+		if (e.target.name === "add-pharmacist" || (e.type === "keydown" && e.key === "Enter")) {
+			if (e.target.name !== "add-pharmacist") return; // Already handled above
+			
+			const gphcInput = this.querySelector("#new-pharmacist-gphc");
+			const nameInput = this.querySelector("#new-pharmacist-name");
+			const gphc = gphcInput.value.trim();
+			const fullName = nameInput.value.trim();
+			
+			if (!/^\d{7}$/.test(gphc)) {
+				gphcInput.setCustomValidity('GPHC number must be exactly 7 digits');
+				gphcInput.reportValidity();
+				return;
+			}
+			if (!fullName) {
+				nameInput.setCustomValidity('Full name is required');
+				nameInput.reportValidity();
+				return;
+			}
+			
+			this.querySelector("#pharmacist-list").innerHTML += `<pharmacist-item gphc="${gphc}" fullname="${fullName}"></pharmacist-item>`;
+			gphcInput.value = "";
+			nameInput.value = "";
+			gphcInput.setCustomValidity('');
+			nameInput.setCustomValidity('');
+			gphcInput.focus();
 		}
 	}
-	reset() {
-		this.querySelector("fieldset").replaceChildren();
+	getData() {
+		const items = this.querySelectorAll('pharmacist-item');
+		const pharmacists = [];
+		items.forEach(item => {
+			const gphc = item.querySelector('[name="pharmacist-gphc"]').value;
+			const name = item.querySelector('[name="pharmacist-name"]').value;
+			if (gphc && name) {
+				pharmacists.push({ gphc, name });
+			}
+		});
+		return pharmacists;
 	}
 })
