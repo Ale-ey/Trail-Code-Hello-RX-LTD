@@ -133,11 +133,12 @@ customElements.define(
       }
     }
     businessType(type, values) {
-      if (values)
-        this.querySelector("#business").innerHTML = bootstrap_inputs(
-          businessType[type].fields,
-          values
-        );
+      // Render business type fields when selected, with or without existing values
+      const businessFieldset = this.querySelector("#business");
+      businessFieldset.innerHTML = `<legend>Business Information</legend>${bootstrap_inputs(
+        businessType[type].fields,
+        values
+      )}`;
     }
     viewChanged() {
       const values = {};
@@ -155,6 +156,7 @@ customElements.define(
     )}
 </div>
 	<fieldset id=business name=business>
+		<legend>Business Information</legend>
 	</fieldset>
 	<fieldset name=contact>
 		<legend>Contact</legend>
