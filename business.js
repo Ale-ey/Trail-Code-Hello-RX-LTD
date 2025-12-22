@@ -81,12 +81,15 @@ customElements.define('business-application', class BusinessApplication extends 
 			const id = this.getAttribute("k");
 			const data = new FormData(e.target);
 			if (id) data.id = id;
-			if(!data.business || !data.business.size) {
+			
+			const businessTypeValue = data.get("businessType");
+			if(!businessTypeValue) {
 				this.querySelector("[name=businessType]").focus();
 				dispatchEvent(new CustomEvent("toast-error", { detail: { message: "Please select a business type", style: "text-bg-warning" } }));
 				return;
 			}
-			if(!data.ods || data.ods.length == 0) {
+			
+			if(!data.get("ods")) {
 				this.querySelector("#ods").focus();
 				dispatchEvent(new CustomEvent("toast-error", { detail: { message: "Please add at least one pharmacy", style: "text-bg-warning" } }));
 				return;
@@ -96,8 +99,7 @@ customElements.define('business-application', class BusinessApplication extends 
 		}
 	}
 	businessType(type, values) {
-		if(values)
-			this.querySelector("#business").innerHTML = bootstrap_inputs(businessType[type].fields, values);
+		this.querySelector("#business").innerHTML = bootstrap_inputs(businessType[type].fields, values);
 	}
 	viewChanged() {
 		const values = {};
