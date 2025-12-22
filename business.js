@@ -96,7 +96,19 @@ customElements.define('business-application', class BusinessApplication extends 
 			}
 			const detail = { type: id? "business-accept" : "business-application", data };
 			this.dispatchEvent(new CustomEvent("journal-post", { bubbles: true, detail }));
+			
+			// Temporary: Show success since there's no backend yet
+			this.showSuccess();
 		}
+	}
+	showSuccess() {
+		this.innerHTML = `<div class="alert alert-success m-5" role="alert">
+			<h4 class="alert-heading">Application Submitted!</h4>
+			<p>Your application has been posted successfully. Our team will contact you with the next steps.</p>
+			<hr>
+			<p class="mb-0">Thank you for your interest in working with us.</p>
+		</div>`;
+		dispatchEvent(new CustomEvent("toast-success", { detail: { message: "Application submitted successfully!", style: "text-bg-success"  } }));
 	}
 	businessType(type, values) {
 		this.querySelector("#business").innerHTML = bootstrap_inputs(businessType[type].fields, values);
