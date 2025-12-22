@@ -65,11 +65,15 @@ customElements.define(
       }
       // Handle adding new pharmacy ODS code to the list
       if (e.target.name === "add") {
-        const input = this.querySelector("#ods");
-        this.querySelector(
-          "#pharmacies"
-        ).innerHTML += `<pharmacy-ods-input ods="${input.value}"></pharmacy-ods-input>`;
-        input.value = "";
+        const odsInput = this.querySelector("#ods");
+        const nameInput = this.querySelector("#pharmacy-name");
+        if (odsInput.value && nameInput.value) {
+          this.querySelector(
+            "#pharmacies"
+          ).innerHTML += `<pharmacy-ods-input ods="${odsInput.value}" name="${nameInput.value}"></pharmacy-ods-input>`;
+          odsInput.value = "";
+          nameInput.value = "";
+        }
         return;
       }
       // Handle adding new pharmacist to the list with GPHC number and name
@@ -193,13 +197,15 @@ customElements.define(
 	<fieldset id=pharmacies class="mb-3">
 		${
       values?.ods?.reduce(
-        (a, v) => `${a}<pharmacy-ods-input ods="${v}"></pharmacy-ods-input>`,
+        (a, v) =>
+          `${a}<pharmacy-ods-input ods="${v.ods}" name="${v.name}"></pharmacy-ods-input>`,
         ""
       ) ?? ""
     }
 	</fieldset>
 	<div class="input-group mb-3">
 		<input class="form-control" id="ods" form="" placeholder="ODS code (e.g., AB123)" title="5-6 character ODS code">
+		<input class="form-control" id="pharmacy-name" form="" placeholder="Pharmacy name" title="Name of the pharmacy">
 		<button type=button class="btn btn-primary" name=add><i class="bi bi-plus-circle"></i> Add pharmacy</button>
 	</div>
 	<legend>Pharmacists</legend>
@@ -334,11 +340,15 @@ customElements.define(
   class PharmacyOdsInput extends HTMLElement {
     connectedCallback() {
       const ods = this.getAttribute("ods");
+      const name = this.getAttribute("name");
       this.addEventListener("change", this);
-      this.classList.add("input-group");
-      this.innerHTML = `<pharmacy-name class="input-group-text">
-			<ods-input ods="${ods ?? ""}" placeholder="ODS code"></ods-input>
-		</pharmacy-name>
+      this.classList.add("input-group", "mb-2");
+      this.innerHTML = `<ods-input ods="${
+        ods ?? ""
+      }" placeholder="ODS code"></ods-input>
+		<input class="form-control" name="pharmacy-name" value="${
+      name ?? ""
+    }" placeholder="Pharmacy name" required>
 		<button type=button class="btn btn-secondary" name="remove">-</button>`;
     }
   }
