@@ -13,6 +13,8 @@ const contact_fields = {
     label: "Telephone",
     type: "tel",
     pattern: "^(0|\\+?44)7\\d{9}$|^(0|\\+?44)1\\d{8,9}$",
+    placeholder: "07123456789 or 01234567890",
+    title: "UK mobile (07...) or landline (01...) number",
   },
 };
 
@@ -93,6 +95,14 @@ customElements.define(
         // Validate business type is selected by checking if business fieldset has input elements
         if (!this.querySelector("#business input")) {
           this.querySelector("[name=businessType]").focus();
+          dispatchEvent(
+            new CustomEvent("toast-error", {
+              detail: {
+                message: "Please select a business type",
+                style: "text-bg-warning",
+              },
+            })
+          );
           return;
         }
 
@@ -102,6 +112,14 @@ customElements.define(
         );
         if (odsInputs.length === 0) {
           this.querySelector("#ods").focus();
+          dispatchEvent(
+            new CustomEvent("toast-error", {
+              detail: {
+                message: "Please add at least one pharmacy ODS code",
+                style: "text-bg-warning",
+              },
+            })
+          );
           return;
         }
 
@@ -143,6 +161,7 @@ customElements.define(
 		${bootstrap_inputs(contact_fields, values?.contact)}
 	</fieldset>
 	<legend>Pharmacies</legend>
+	<div class="text-muted small mb-2">Add the ODS codes for pharmacies in your network</div>
 	<fieldset id=pharmacies class="mb-3">
 		${
       values?.ods?.reduce(
@@ -152,24 +171,26 @@ customElements.define(
     }
 	</fieldset>
 	<div class="input-group mb-3">
-		<input class="form-control" id="ods" form="" placeholder="ODS code">
-		<button type=button class="btn btn-primary" name=add>Add pharmacy</button>
+		<input class="form-control" id="ods" form="" placeholder="ODS code (e.g., AB123)" title="5-6 character ODS code">
+		<button type=button class="btn btn-primary" name=add><i class="bi bi-plus-circle"></i> Add pharmacy</button>
 	</div>
 	<legend>Pharmacists</legend>
+	<div class="text-muted small mb-2">Add registered pharmacists with their GPHC registration numbers</div>
 	<fieldset id=pharmacists class="mb-3">
 		${
       values?.pharmacists?.reduce(
-        (a, v) => `${a}<pharmacist-input gphc="${v.gphc}" name="${v.name}"></pharmacist-input>`,
+        (a, v) =>
+          `${a}<pharmacist-input gphc="${v.gphc}" name="${v.name}"></pharmacist-input>`,
         ""
       ) ?? ""
     }
 	</fieldset>
 	<div class="input-group mb-3">
 		<input class="form-control" id="gphc" form="" placeholder="GPHC number" pattern="\\d{7}" maxlength="7" size="7" title="7 digit GPHC number">
-		<input class="form-control" id="pharmacist-name" form="" placeholder="Full name">
-		<button type=button class="btn btn-primary" name=add-pharmacist>Add pharmacist</button>
+		<input class="form-control" id="pharmacist-name" form="" placeholder="Full name" title="Pharmacist's full name">
+		<button type=button class="btn btn-primary" name=add-pharmacist><i class="bi bi-plus-circle"></i> Add pharmacist</button>
 	</div>
-	<button type="submit" class="btn btn-primary">${
+	<button type="submit" class="btn btn-primary btn-lg w-100 mt-3"><i class="bi bi-send"></i> ${
     values ? "Accept" : "Apply"
   }</button>
 </form>`;
