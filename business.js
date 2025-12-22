@@ -61,12 +61,27 @@ customElements.define(
         e.target.parentNode.remove();
         return;
       }
+      // Handle adding new pharmacy ODS code to the list
       if (e.target.name === "add") {
         const input = this.querySelector("#ods");
         this.querySelector(
           "#pharmacies"
         ).innerHTML += `<pharmacy-ods-input ods="${input.value}"></pharmacy-ods-input>`;
         input.value = "";
+        return;
+      }
+      // Handle adding new pharmacist to the list with GPHC number and name
+      if (e.target.name === "add-pharmacist") {
+        const gphcInput = this.querySelector("#gphc");
+        const nameInput = this.querySelector("#pharmacist-name");
+        if (gphcInput.value && nameInput.value) {
+          this.querySelector(
+            "#pharmacists"
+          ).innerHTML += `<pharmacist-input gphc="${gphcInput.value}" name="${nameInput.value}"></pharmacist-input>`;
+          gphcInput.value = "";
+          nameInput.value = "";
+        }
+        return;
       }
 
       if (e.type === "submit") {
@@ -139,6 +154,20 @@ customElements.define(
 	<div class="input-group mb-3">
 		<input class="form-control" id="ods" form="" placeholder="ODS code">
 		<button type=button class="btn btn-primary" name=add>Add pharmacy</button>
+	</div>
+	<legend>Pharmacists</legend>
+	<fieldset id=pharmacists class="mb-3">
+		${
+      values?.pharmacists?.reduce(
+        (a, v) => `${a}<pharmacist-input gphc="${v.gphc}" name="${v.name}"></pharmacist-input>`,
+        ""
+      ) ?? ""
+    }
+	</fieldset>
+	<div class="input-group mb-3">
+		<input class="form-control" id="gphc" form="" placeholder="GPHC number" pattern="\\d{7}" maxlength="7" size="7" title="7 digit GPHC number">
+		<input class="form-control" id="pharmacist-name" form="" placeholder="Full name">
+		<button type=button class="btn btn-primary" name=add-pharmacist>Add pharmacist</button>
 	</div>
 	<button type="submit" class="btn btn-primary">${
     values ? "Accept" : "Apply"
