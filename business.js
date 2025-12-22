@@ -123,12 +123,38 @@ customElements.define(
           return;
         }
 
+        // Validate at least one pharmacist is added to the list
+        const pharmacistInputs = this.querySelectorAll(
+          "#pharmacists input[name='gphc']"
+        );
+        if (pharmacistInputs.length === 0) {
+          this.querySelector("#gphc").focus();
+          dispatchEvent(
+            new CustomEvent("toast-error", {
+              detail: {
+                message: "Please add at least one registered pharmacist",
+                style: "text-bg-warning",
+              },
+            })
+          );
+          return;
+        }
+
         const detail = {
           type: id ? "business-accept" : "business-application",
           data,
         };
         this.dispatchEvent(
           new CustomEvent("journal-post", { bubbles: true, detail })
+        );
+        // Show success toast after form submission
+        dispatchEvent(
+          new CustomEvent("toast-success", {
+            detail: {
+              message: "Application submitted successfully!",
+              style: "text-bg-success",
+            },
+          })
         );
       }
     }
