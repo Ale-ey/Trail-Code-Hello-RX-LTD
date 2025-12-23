@@ -67,26 +67,76 @@ customElements.define(
       if (e.target.name === "add") {
         const odsInput = this.querySelector("#ods");
         const nameInput = this.querySelector("#pharmacy-name");
-        if (odsInput.value && nameInput.value) {
-          this.querySelector(
-            "#pharmacies"
-          ).innerHTML += `<pharmacy-ods-input ods="${odsInput.value}" name="${nameInput.value}"></pharmacy-ods-input>`;
-          odsInput.value = "";
-          nameInput.value = "";
+        
+        // Validate ODS format before adding (2-3 letters followed by 2-3 digits)
+        const odsPattern = /^[a-zA-Z]{2,3}\d{2,3}$/;
+        
+        if (!odsInput.value || !nameInput.value) {
+          if (!odsInput.value) odsInput.focus();
+          else nameInput.focus();
+          return;
         }
+        
+        if (!odsPattern.test(odsInput.value)) {
+          odsInput.setCustomValidity("Please correct the format: AB123");
+          odsInput.reportValidity();
+          odsInput.focus();
+          dispatchEvent(
+            new CustomEvent("toast-error", {
+              detail: {
+                message: "Invalid ODS code format. Use format: AB123",
+                style: "text-bg-warning",
+              },
+            })
+          );
+          return;
+        }
+        
+        // ODS is valid, add the pharmacy
+        odsInput.setCustomValidity("");
+        this.querySelector(
+          "#pharmacies"
+        ).innerHTML += `<pharmacy-ods-input ods="${odsInput.value}" name="${nameInput.value}"></pharmacy-ods-input>`;
+        odsInput.value = "";
+        nameInput.value = "";
         return;
       }
       // Handle adding new pharmacist to the list with GPHC number and name
       if (e.target.name === "add-pharmacist") {
         const gphcInput = this.querySelector("#gphc");
         const nameInput = this.querySelector("#pharmacist-name");
-        if (gphcInput.value && nameInput.value) {
-          this.querySelector(
-            "#pharmacists"
-          ).innerHTML += `<pharmacist-input gphc="${gphcInput.value}" name="${nameInput.value}"></pharmacist-input>`;
-          gphcInput.value = "";
-          nameInput.value = "";
+        
+        // Validate GPHC format before adding (exactly 7 digits)
+        const gphcPattern = /^\d{7}$/;
+        
+        if (!gphcInput.value || !nameInput.value) {
+          if (!gphcInput.value) gphcInput.focus();
+          else nameInput.focus();
+          return;
         }
+        
+        if (!gphcPattern.test(gphcInput.value)) {
+          gphcInput.setCustomValidity("GPHC number must be exactly 7 digits");
+          gphcInput.reportValidity();
+          gphcInput.focus();
+          dispatchEvent(
+            new CustomEvent("toast-error", {
+              detail: {
+                message: "Invalid GPHC number. Must be exactly 7 digits",
+                style: "text-bg-warning",
+              },
+            })
+          );
+          return;
+        }
+        
+        // GPHC is valid, add the pharmacist
+        gphcInput.setCustomValidity("");
+        this.querySelector(
+          "#pharmacists"
+        ).innerHTML += `<pharmacist-input gphc="${gphcInput.value}" name="${nameInput.value}"></pharmacist-input>`;
+        gphcInput.value = "";
+        nameInput.value = "";
         return;
       }
 
@@ -167,7 +217,7 @@ customElements.define(
     businessType(type, values) {
       // Render business type fields when selected, with or without existing values
       const businessFieldset = this.querySelector("#business");
-      businessFieldset.innerHTML = `<legend>Business Information</legend>${bootstrap_inputs(
+      businessFieldset.innerHTML = `<legend><i class="bi bi-briefcase"></i> Business Information</legend>${bootstrap_inputs(
         businessType[type].fields,
         values
       )}`;
@@ -175,28 +225,27 @@ customElements.define(
     viewChanged() {
       const values = {};
       this.innerHTML = `<form>
-<div class="btn-group btn-group-toggle w-100 mb-3" data-bs-toggle="buttons">
+	<h4 class="text-center mb-4"><i class="bi bi-building"></i> Business Application</h4>
+	<div class="btn-group btn-group-toggle w-100 mb-4" data-bs-toggle="buttons">
 		${Object.entries(businessType).reduce(
       (a, [k, v]) => `${a}
-<input type="radio" class="btn-check" name="businessType" id="${k}" value="${k}" required ${
+	<input type="radio" class="btn-check" name="businessType" id="${k}" value="${k}" required ${
         values?.businessType === k ? "checked" : ""
       }>
-<label class="btn btn-outline-primary btn-lg flex-fill" for="${k}">${
-        v.name
-      }</label>`,
+	<label class="btn btn-outline-primary flex-fill" for="${k}">${v.name}</label>`,
       ""
     )}
-</div>
+	</div>
 	<fieldset id=business name=business>
-		<legend>Business Information</legend>
+		<legend><i class="bi bi-briefcase"></i> Business Information</legend>
 	</fieldset>
 	<fieldset name=contact>
-		<legend>Contact</legend>
+		<legend><i class="bi bi-person-badge"></i> Contact</legend>
 		${bootstrap_inputs(contact_fields, values?.contact)}
 	</fieldset>
-	<legend>Pharmacies</legend>
+	<legend><i class="bi bi-shop"></i> Pharmacies</legend>
 	<div class="text-muted small mb-2">Add the ODS codes for pharmacies in your network</div>
-	<fieldset id=pharmacies class="mb-3">
+	<fieldset id=pharmacies class="mb-2">
 		${
       values?.ods?.reduce(
         (a, v) =>
@@ -206,13 +255,13 @@ customElements.define(
     }
 	</fieldset>
 	<div class="input-group mb-3">
-		<input class="form-control" id="ods" form="" placeholder="ODS code (e.g., AB123)" title="5-6 character ODS code">
-		<input class="form-control" id="pharmacy-name" form="" placeholder="Pharmacy name" title="Name of the pharmacy">
-		<button type=button class="btn btn-primary" name=add><i class="bi bi-plus-circle"></i> Add pharmacy</button>
+		<input class="form-control form-control-sm" id="ods" form="" placeholder="ODS code (e.g., AB123)" title="5-6 character ODS code">
+		<input class="form-control form-control-sm" id="pharmacy-name" form="" placeholder="Pharmacy name" title="Name of the pharmacy">
+		<button type=button class="btn btn-success btn-sm" name=add><i class="bi bi-plus-lg"></i></button>
 	</div>
-	<legend>Pharmacists</legend>
+	<legend><i class="bi bi-heart-pulse"></i> Pharmacists</legend>
 	<div class="text-muted small mb-2">Add registered pharmacists with their GPHC registration numbers</div>
-	<fieldset id=pharmacists class="mb-3">
+	<fieldset id=pharmacists class="mb-2">
 		${
       values?.pharmacists?.reduce(
         (a, v) =>
@@ -222,12 +271,12 @@ customElements.define(
     }
 	</fieldset>
 	<div class="input-group mb-3">
-		<input class="form-control" id="gphc" form="" placeholder="GPHC number" pattern="\\d{7}" maxlength="7" size="7" title="7 digit GPHC number">
-		<input class="form-control" id="pharmacist-name" form="" placeholder="Full name" title="Pharmacist's full name">
-		<button type=button class="btn btn-primary" name=add-pharmacist><i class="bi bi-plus-circle"></i> Add pharmacist</button>
+		<input class="form-control form-control-sm" id="gphc" form="" placeholder="GPHC number" pattern="\\d{7}" maxlength="7" size="7" title="7 digit GPHC number">
+		<input class="form-control form-control-sm" id="pharmacist-name" form="" placeholder="Full name" title="Pharmacist's full name">
+		<button type=button class="btn btn-success btn-sm" name=add-pharmacist><i class="bi bi-plus-lg"></i></button>
 	</div>
-	<button type="submit" class="btn btn-primary btn-lg w-100 mt-3"><i class="bi bi-send"></i> ${
-    values ? "Accept" : "Apply"
+	<button type="submit" class="btn btn-primary btn-lg w-100 mt-4"><i class="bi bi-send-fill"></i> ${
+    values ? "Accept" : "Submit Application"
   }</button>
 </form>`;
       // Only restore business type fields if there's a valid businessType value
@@ -333,7 +382,7 @@ customElements.define(
         <input class="form-control" name="pharmacist-name" value="${
           name ?? ""
         }" placeholder="Full name" required>
-        <button type="button" class="btn btn-secondary" name="remove">-</button>`;
+        <button type="button" class="btn btn-danger" name="remove" title="Remove pharmacist"><i class="bi bi-trash"></i></button>`;
     }
   }
 );
@@ -352,7 +401,7 @@ customElements.define(
 		<input class="form-control" name="pharmacy-name" value="${
       name ?? ""
     }" placeholder="Pharmacy name" required>
-		<button type=button class="btn btn-secondary" name="remove">-</button>`;
+		<button type=button class="btn btn-danger" name="remove" title="Remove pharmacy"><i class="bi bi-trash"></i></button>`;
     }
   }
 );
