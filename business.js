@@ -160,6 +160,8 @@ customElements.define(
             },
           })
         );
+        // Reset form to initial state for next submission
+        this.viewChanged();
       }
     }
     businessType(type, values) {
@@ -228,7 +230,8 @@ customElements.define(
     values ? "Accept" : "Apply"
   }</button>
 </form>`;
-      if (values) {
+      // Only restore business type fields if there's a valid businessType value
+      if (values?.businessType) {
         this.businessType(values.businessType, values.business);
       }
     }
