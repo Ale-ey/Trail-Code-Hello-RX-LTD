@@ -64,7 +64,9 @@ customElements.define(
         return;
       }
       // Handle adding new pharmacy ODS code to the list
-      if (e.target.name === "add") {
+      const addButton = e.target.closest('button[name="add"]');
+      if (addButton) {
+        e.stopPropagation();
         const odsInput = this.querySelector("#ods");
         const nameInput = this.querySelector("#pharmacy-name");
 
@@ -102,7 +104,11 @@ customElements.define(
         return;
       }
       // Handle adding new pharmacist to the list with GPHC number and name
-      if (e.target.name === "add-pharmacist") {
+      const addPharmacistButton = e.target.closest(
+        'button[name="add-pharmacist"]'
+      );
+      if (addPharmacistButton) {
+        e.stopPropagation();
         const gphcInput = this.querySelector("#gphc");
         const nameInput = this.querySelector("#pharmacist-name");
 
