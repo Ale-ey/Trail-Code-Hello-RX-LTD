@@ -1,0 +1,123 @@
+/* Base Styles */
+html {
+  height: 100%;
+  min-height: 100%;
+}
+
+body {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  min-height: 100vh;
+  margin: 0;
+  background-attachment: fixed;
+}
+
+/* Form Styling */
+business-application form {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Button Group */
+.btn-group label {
+  font-size: 0.9rem;
+  padding: 0.5rem 1rem;
+}
+
+/* Typography */
+legend {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: #fff;
+}
+
+/* Form Controls */
+.form-floating {
+  margin-bottom: 1rem !important;
+}
+
+.input-group {
+  margin-bottom: 0.75rem !important;
+}
+
+fieldset {
+  margin-bottom: 1.5rem !important;
+}
+
+.text-muted {
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem !important;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  business-application form {
+    padding: 1.25rem;
+    border-radius: 12px;
+  }
+
+  .btn-group {
+    flex-direction: column !important;
+  }
+
+  .btn-group label {
+    border-radius: 0.375rem !important;
+    margin-bottom: 0.5rem;
+  }
+
+  .btn-group label:first-of-type {
+    border-radius: 0.375rem !important;
+  }
+
+  .btn-group label:last-of-type {
+    border-radius: 0.375rem !important;
+  }
+
+  legend {
+    font-size: 1rem;
+  }
+
+  h4 {
+    font-size: 1.25rem !important;
+  }
+
+  .input-group .form-control:not(:last-child) {
+    margin-bottom: 0.5rem;
+  }
+
+  .input-group {
+    flex-wrap: wrap;
+  }
+
+  .input-group .btn {
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+
+  .input-group > * {
+    flex: 1 1 100%;
+  }
+
+  .py-5 {
+    padding-top: 2rem !important;
+    padding-bottom: 2rem !important;
+  }
+}
+
+@media (max-width: 576px) {
+  business-application form {
+    padding: 1rem;
+  }
+
+  .form-control-sm {
+    font-size: 0.875rem;
+  }
+
+  .btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+  }
+}
