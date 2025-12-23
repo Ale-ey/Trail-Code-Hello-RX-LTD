@@ -67,16 +67,16 @@ customElements.define(
       if (e.target.name === "add") {
         const odsInput = this.querySelector("#ods");
         const nameInput = this.querySelector("#pharmacy-name");
-        
+
         // Validate ODS format before adding (2-3 letters followed by 2-3 digits)
         const odsPattern = /^[a-zA-Z]{2,3}\d{2,3}$/;
-        
+
         if (!odsInput.value || !nameInput.value) {
           if (!odsInput.value) odsInput.focus();
           else nameInput.focus();
           return;
         }
-        
+
         if (!odsPattern.test(odsInput.value)) {
           odsInput.setCustomValidity("Please correct the format: AB123");
           odsInput.reportValidity();
@@ -91,7 +91,7 @@ customElements.define(
           );
           return;
         }
-        
+
         // ODS is valid, add the pharmacy
         odsInput.setCustomValidity("");
         this.querySelector(
@@ -105,16 +105,16 @@ customElements.define(
       if (e.target.name === "add-pharmacist") {
         const gphcInput = this.querySelector("#gphc");
         const nameInput = this.querySelector("#pharmacist-name");
-        
+
         // Validate GPHC format before adding (exactly 7 digits)
         const gphcPattern = /^\d{7}$/;
-        
+
         if (!gphcInput.value || !nameInput.value) {
           if (!gphcInput.value) gphcInput.focus();
           else nameInput.focus();
           return;
         }
-        
+
         if (!gphcPattern.test(gphcInput.value)) {
           gphcInput.setCustomValidity("GPHC number must be exactly 7 digits");
           gphcInput.reportValidity();
@@ -129,7 +129,7 @@ customElements.define(
           );
           return;
         }
-        
+
         // GPHC is valid, add the pharmacist
         gphcInput.setCustomValidity("");
         this.querySelector(
