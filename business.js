@@ -130,8 +130,6 @@ customElements.define(
         }
 
         if (!odsPattern.test(odsInput.value)) {
-          odsInput.setCustomValidity("Please correct the format: AB123");
-          odsInput.reportValidity();
           odsInput.focus();
           dispatchEvent(
             new CustomEvent("toast-error", {
@@ -145,10 +143,6 @@ customElements.define(
         }
 
         if (!namePattern.test(nameInput.value)) {
-          nameInput.setCustomValidity(
-            "Pharmacy name can only contain letters, numbers, spaces, and common symbols (&'-.)"
-          );
-          nameInput.reportValidity();
           nameInput.focus();
           dispatchEvent(
             new CustomEvent("toast-error", {
@@ -163,8 +157,6 @@ customElements.define(
         }
 
         // ODS and name are valid, add the pharmacy
-        nameInput.setCustomValidity("");
-        odsInput.setCustomValidity("");
         this.querySelector(
           "#pharmacies"
         ).innerHTML += `<pharmacy-ods-input ods="${odsInput.value}" name="${nameInput.value}"></pharmacy-ods-input>`;
@@ -196,11 +188,8 @@ customElements.define(
         }
 
         if (!gphcPattern.test(gphcInput.value)) {
-          // Invalid GPHC number - show validation error and focus input
-          gphcInput.setCustomValidity("GPHC number must be exactly 7 digits");
-          gphcInput.reportValidity();
+          // Invalid GPHC number - show toast notification and focus input
           gphcInput.focus();
-          // Display user-friendly toast notification
           dispatchEvent(
             new CustomEvent("toast-error", {
               detail: {
@@ -213,10 +202,6 @@ customElements.define(
         }
 
         if (!namePattern.test(nameInput.value)) {
-          nameInput.setCustomValidity(
-            "Name must contain only letters, spaces, hyphens and apostrophes"
-          );
-          nameInput.reportValidity();
           nameInput.focus();
           dispatchEvent(
             new CustomEvent("toast-error", {
@@ -231,9 +216,7 @@ customElements.define(
         }
 
         // GPHC and name are valid - create new pharmacist-input component and add to list
-        nameInput.setCustomValidity("");
         // The component will render with GPHC input, name field, and remove button
-        gphcInput.setCustomValidity("");
         this.querySelector(
           "#pharmacists"
         ).innerHTML += `<pharmacist-input gphc="${gphcInput.value}" name="${nameInput.value}"></pharmacist-input>`;
