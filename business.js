@@ -1,8 +1,17 @@
 // Contact form field definitions
 // Note: Using 'optional: true' consistently instead of 'required: false' to match bootstrap_inputs logic
 const contact_fields = {
-  name: { label: "Name" },
-  position: { label: "Position" },
+  name: {
+    label: "Name",
+    pattern: "^[a-zA-Z\\s'-]+$",
+    title: "Name must contain only letters, spaces, hyphens and apostrophes",
+  },
+  position: {
+    label: "Position",
+    pattern: "^[a-zA-Z\\s'-]+$",
+    title:
+      "Position must contain only letters, spaces, hyphens and apostrophes",
+  },
   email: { label: "Email", type: "email" },
   invoiceEmail: {
     label: "Invoice email (Optional)",
@@ -19,14 +28,24 @@ const contact_fields = {
 };
 
 const address = { label: "Address", type: "address" };
-const name = { label: "Name" };
+const name = {
+  label: "Name",
+  pattern: "^[a-zA-Z0-9\\s&'-\\.]+$",
+  title:
+    "Business name can contain letters, numbers, spaces, and common symbols",
+};
 
 const businessType = {
   limitedCompany: {
     name: "Limited Company",
     fields: {
       name,
-      number: { label: "Number", placeholder: "01234567" },
+      number: {
+        label: "Number",
+        placeholder: "01234567",
+        pattern: "^[0-9]+$",
+        title: "Company number must contain only digits",
+      },
       address,
     },
   },
@@ -101,6 +120,8 @@ customElements.define(
 
         // Validate ODS format before adding (2-3 letters followed by 2-3 digits)
         const odsPattern = /^[a-zA-Z]{2,3}\d{2,3}$/;
+        // Validate pharmacy name - letters, numbers, spaces, and common symbols
+        const namePattern = /^[a-zA-Z0-9\s&'-\.]+$/;
 
         if (!odsInput.value || !nameInput.value) {
           if (!odsInput.value) odsInput.focus();
@@ -123,7 +144,26 @@ customElements.define(
           return;
         }
 
-        // ODS is valid, add the pharmacy
+        if (!namePattern.test(nameInput.value)) {
+          nameInput.setCustomValidity(
+            "Pharmacy name can only contain letters, numbers, spaces, and common symbols (&'-.)"
+          );
+          nameInput.reportValidity();
+          nameInput.focus();
+          dispatchEvent(
+            new CustomEvent("toast-error", {
+              detail: {
+                message:
+                  "Invalid pharmacy name. Use only letters, numbers, and common symbols",
+                style: "text-bg-warning",
+              },
+            })
+          );
+          return;
+        }
+
+        // ODS and name are valid, add the pharmacy
+        nameInput.setCustomValidity("");
         odsInput.setCustomValidity("");
         this.querySelector(
           "#pharmacies"
@@ -146,6 +186,8 @@ customElements.define(
         // Validate GPHC format before adding (exactly 7 digits)
         // GPHC (General Pharmaceutical Council) registration numbers are always 7 digits
         const gphcPattern = /^\d{7}$/;
+        // Validate pharmacist name - only letters, spaces, hyphens, and apostrophes
+        const namePattern = /^[a-zA-Z\s'-]+$/;
 
         if (!gphcInput.value || !nameInput.value) {
           if (!gphcInput.value) gphcInput.focus();
@@ -170,7 +212,26 @@ customElements.define(
           return;
         }
 
-        // GPHC is valid - create new pharmacist-input component and add to list
+        if (!namePattern.test(nameInput.value)) {
+          nameInput.setCustomValidity(
+            "Name must contain only letters, spaces, hyphens and apostrophes"
+          );
+          nameInput.reportValidity();
+          nameInput.focus();
+          dispatchEvent(
+            new CustomEvent("toast-error", {
+              detail: {
+                message:
+                  "Invalid name. Use only letters, spaces, hyphens and apostrophes",
+                style: "text-bg-warning",
+              },
+            })
+          );
+          return;
+        }
+
+        // GPHC and name are valid - create new pharmacist-input component and add to list
+        nameInput.setCustomValidity("");
         // The component will render with GPHC input, name field, and remove button
         gphcInput.setCustomValidity("");
         this.querySelector(
@@ -298,7 +359,7 @@ customElements.define(
 	</fieldset>
 	<div class="input-group mb-3">
 		<input class="form-control form-control-sm" id="ods" form="" placeholder="ODS code (e.g., AB123)" title="5-6 character ODS code">
-		<input class="form-control form-control-sm" id="pharmacy-name" form="" placeholder="Pharmacy name" title="Name of the pharmacy">
+		<input class="form-control form-control-sm" id="pharmacy-name" form="" placeholder="Pharmacy name" pattern="^[a-zA-Z0-9\\s&'-\\.]+$" title="Letters, numbers, spaces, and common symbols only">
 		<button type=button class="btn btn-success btn-sm" name=add><i class="bi bi-plus-lg"></i></button>
 	</div>
 	<legend><i class="bi bi-heart-pulse"></i> Pharmacists</legend>
@@ -314,7 +375,7 @@ customElements.define(
 	</fieldset>
 	<div class="input-group mb-3">
 		<input class="form-control form-control-sm" id="gphc" form="" placeholder="GPHC number" pattern="\\d{7}" maxlength="7" size="7" title="7 digit GPHC number">
-		<input class="form-control form-control-sm" id="pharmacist-name" form="" placeholder="Full name" title="Pharmacist's full name">
+		<input class="form-control form-control-sm" id="pharmacist-name" form="" placeholder="Full name" pattern="^[a-zA-Z\\s'-]+$" title="Letters, spaces, hyphens and apostrophes only">
 		<button type=button class="btn btn-success btn-sm" name=add-pharmacist><i class="bi bi-plus-lg"></i></button>
 	</div>
 	<button type="submit" class="btn btn-primary btn-lg w-100 mt-4"><i class="bi bi-send-fill"></i> ${
