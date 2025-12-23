@@ -287,7 +287,8 @@ customElements.define(
         this.dispatchEvent(
           new CustomEvent("journal-post", { bubbles: true, detail })
         );
-        // Show success toast after form submission
+        // No backend connected - just showing success toast for demo purposes
+        // In production, this would send data to server and handle response
         dispatchEvent(
           new CustomEvent("toast-success", {
             detail: {
@@ -361,9 +362,9 @@ customElements.define(
 		<input class="form-control form-control-sm" id="pharmacist-name" form="" placeholder="Full name" pattern="^[a-zA-Z\\s'-]+$" title="Letters, spaces, hyphens and apostrophes only">
 		<button type=button class="btn btn-success btn-sm" name=add-pharmacist><i class="bi bi-plus-lg"></i></button>
 	</div>
-	<button type="submit" class="btn btn-primary btn-lg w-100 mt-4"><i class="bi bi-send-fill"></i> ${
-    values ? "Accept" : "Submit Application"
-  }</button>
+	<submit-button class="d-block w-100 mt-4">
+		<i class="bi bi-send-fill"></i> ${values ? "Accept" : "Submit Application"}
+	</submit-button>
 </form>`;
       // Only restore business type fields if there's a valid businessType value
       if (values?.businessType) {
